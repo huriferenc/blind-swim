@@ -23,8 +23,8 @@
       var r = 1;
       var rt = 1;
 
-      var x0 = 47.4492947;
-      var y0 = 19.1162885;
+      var xtarget = 47.4492947;
+      var ytarget = 19.1162885;
 
       var x = Math.random() * (x0 * (1 + range) - x0) + x0;
       var y = Math.random() * (y0 * (1 + range) - y0) + y0;
@@ -49,20 +49,19 @@
       var sinFPlusrange = 1;
       var cosFMinusrange = 1;
       var cosFPlusrange = 1;
+      
+      var navInstance = navigator.geolocation;
+      var vibInstance = navigator.vibrate;
     </script>
   </header>
 
   <body>
     <h1>Blind Swim</h1>
-    <a href="https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_onclick_html">
-      https://www.w3schools.com/jsref/tryit.asp?filename=tryjsref_onclick_html
-    </a>
-
     <p>Latitude of target:</p>
-    <input id="x0" value="47.44929470" />
+    <input id="xtarget" value="47.44929470" />
     <br />
     <p>Longitude of target:</p>
-    <input id="y0" value="19.11628850" />
+    <input id="ytarget" value="19.11628850" />
     <br />
 
     <button onclick="startJS()">Click to start</button>
@@ -75,23 +74,20 @@
         init();
         timer = setTimeout(timerEvent, timerInterval);
       }
-      function updateT1(position) {
-        xt1 = position.coords.latitude;
-        yt1 = position.coords.longitude;
-      }
       function init() {
-        x0 = document.getElementById('x0').value;
-        y0 = document.getElementById('y0').value;
-
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(updateT1);
-        } else {
-          xt1 = Math.random() * (x0 * (1 + range) - x0) + x0;
-          yt1 = Math.random() * (y0 * (1 + range) - y0) + y0;
+        xtarget = parseFloat(document.getElementById('xtarget').value);
+        ytarget = parseFloat(document.getElementById('ytarget').value);
+        
+        if (navInstance) {
+          navInstance.getCurrentPosition(updateT);
+        }
+        function updateT(position) {
+          xt1 = parseFloat(position.coords.latitude);
+          yt1 = parseFloat(position.coords.longitude);
         }
 
-        x = x0 - xt1;
-        y = y0 - yt1;
+        x = xtarget - xt1;
+        y = ytarget - yt1;
         r = Math.sqrt(x * x + y * y);
         sinF = y / r;
         cosF = x / r;
@@ -110,12 +106,9 @@
           xt0 = xt1;
           yt0 = yt1;
 
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(updateT1);
-          } else {
-            xt1 = Math.random() * (x0 * (1 + range) - x0) + x0;
-            yt1 = Math.random() * (y0 * (1 + range) - y0) + y0;
-          }
+          if (navInstance) {
+           navInstance.getCurrentPosition(updateT1);
+          } 
 
           xt = xt1 - xt0;
           yt = yt1 - yt0;
@@ -149,8 +142,8 @@
             cosFt.toString();
 
           if (compareFtWithF(sinFt, cosFt) == 'left') {
-            if (navigator.vibrate) {
-              navigator.vibrate(viberLeftArray);
+            if (vibInstance) {
+              vibInstance(viberLeftArray);
             } else {
               document.getElementById('output').innerHTML =
                 'Left:' +
@@ -174,8 +167,8 @@
           }
 
           if (compareFtWithF(sinFt, cosFt) == 'right') {
-            if (navigator.vibrate) {
-              navigator.vibrate(viberRightArray);
+            if (vibInstance) {
+             vibInstance(viberRightArray);
             } else {
               document.getElementById('output').innerHTML =
                 'Right:' +
@@ -196,6 +189,11 @@
                 ' cosFt: ' +
                 cosFt.toString();
             }
+          }
+          
+          function updateT1(position) {
+            xt1 = parseFloat(position.coords.latitude);
+            yt1 = parseFloat(position.coords.longitude);
           }
 
           function compareFtWithF(sinn, coss) {
